@@ -1,0 +1,42 @@
+provider "aws" {
+  profile = "aws-profile"
+  region  = "ap-southeast-2"
+}
+
+
+resource "aws_security_group" "allow_all" {
+  name        = "allow-all"
+  description = "Security group allowing all traffic"
+  
+  // Rules for inbound traffic
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"  # All protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  // Rules for outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"  # All protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  
+  }
+  tags = {
+    Name = "docker-sg"
+  }
+} 
+
+resource "aws_instance" "example_instance" {
+  ami           = "ami-0310483fb2b488153"  # Change to your desired AMI ID
+  instance_type = "t2.micro"              # Change to your desired instance type
+  key_name = "sydney"
+  associate_public_ip_address = true
+  security_groups = [aws_security_group.allow_all.name]
+  user_data = file("docker.sh")
+  tags = {
+    Name = "docker"
+  }
+}
